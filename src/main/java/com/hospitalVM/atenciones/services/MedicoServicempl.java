@@ -1,6 +1,7 @@
 package com.hospitalVM.atenciones.services;
 
 import com.hospitalVM.atenciones.models.Medico;
+import com.hospitalVM.atenciones.models.excepcions.MedicoExistenteExepcion;
 import com.hospitalVM.atenciones.models.excepcions.MedicoInexistenteExcepcions;
 import com.hospitalVM.atenciones.repositories.MedicoRepository;
 import jakarta.transaction.Transactional;
@@ -34,18 +35,30 @@ public class MedicoServicempl implements MedicoServices {
         );
     }
 
+    @Transactional
     @Override
     public Medico save(Medico medico) {
-        return null;
+        if(this.medicoRepository.findByIdRun(medico.getRun()).isPresent()){
+            throw new MedicoInexistenteExcepcions("medico lol")
+        }
+        return this.medicoRepository.save(medico);
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
+        this.medicoRepository.deleteById(id);
 
     }
+
 
     @Override
     public Medico updateById(Long id, Medico medico) {
-        return null;
+        return this.medicoRepository.findById(id).map(element ->{
+            element.setJefeTurno(medico.getJefeTurno());
+            element.setNombrecompleto(medico.getNombrecompleto());
+            return this.medicoRepository.save(element);
+
+        }).orElseThrow()-> new MedicoInexistenteExcepcions("medico non encontrado");
     }
 }
